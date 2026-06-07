@@ -19,18 +19,42 @@ class EinsteinSolver:
         self._prolog = Prolog()
         self._prolog.consult(str(PROLOG_FILE))
 
-    # TODO: Implementează solve() — returnează naționalitatea proprietarului peștelui.
-    # Hint: folosește list(self._prolog.query("einstein(Owner)"))
-    #       și extrage valoarea cheii "Owner" din primul rezultat.
     def solve(self) -> str:
         """Returnează naționalitatea proprietarului peștelui."""
-        raise NotImplementedError("De implementat")
+        rezultate = list(self._prolog.query("einstein(Owner)"))
 
-    # TODO: Implementează get_solution() — returnează lista completă a celor 5 case.
-    # Fiecare casă este un dicționar cu cheile:
-    #   {"culoare": ..., "nationalitate": ..., "bautura": ..., "animal": ..., "tigari": ...}
-    # Hint: interogează predicatul solution/1 și prelucrează structura House Prolog
-    #       (un termen compus de tipul house(Culoare, Nat, Bautura, Animal, Tigari)).
+        if rezultate:
+            # Extragem primul rezultat
+            owner = rezultate[0]["Owner"]
+            # Convertim din bytes în string, necesar în anumite versiuni de PySwip
+            return owner.decode("utf-8") if isinstance(owner, bytes) else str(owner)
+
+        return "Nu s-a găsit o soluție."
+
     def get_solution(self) -> list[dict]:
         """Returnează lista celor 5 case cu toate atributele lor."""
-        raise NotImplementedError("De implementat")
+        rezultate = list(self._prolog.query("solution(Houses)"))
+        houses_list = []
+
+        if rezultate:
+            # Lista de case din primul rezultat
+            houses = rezultate[0]["Houses"]
+
+            for h in houses:
+                # Extragem argumentele functorului `house(Culoare, Nat, Bautura, Animal, Tigari)`
+                args = h.args if hasattr(h, 'args') else h
+
+                # Funcție utilitară internă pentru curățarea string-urilor
+                def to_str(val):
+                    return val.decode("utf-8") if isinstance(val, bytes) else str(val)
+
+                house_dict = {
+                    "culoare": to_str(args[0]),
+                    "nationalitate": to_str(args[1]),
+                    "bautura": to_str(args[2]),
+                    "animal": to_str(args[3]),
+                    "tigari": to_str(args[4])
+                }
+                houses_list.append(house_dict)
+
+        return houses_list

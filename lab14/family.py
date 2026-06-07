@@ -19,28 +19,30 @@ class FamilyKnowledgeBase:
         self._prolog = Prolog()
         self._prolog.consult(str(PROLOG_FILE))
 
-    # TODO: Implementează query_matusa() — returnează lista de perechi (copil, mătușă).
-    # Hint: folosește list(self._prolog.query("matusa(X,Y)"))
-    #       și extrage valorile X și Y din fiecare dicționar rezultat.
+    def _to_str(self, val) -> str:
+        """Helper intern pentru a converti răspunsurile din Prolog (bytes) în string."""
+        return val.decode("utf-8") if isinstance(val, bytes) else str(val)
+
     def query_matusa(self) -> list[tuple[str, str]]:
         """Returnează lista de perechi (copil, mătușă)."""
-        raise NotImplementedError("De implementat")
+        rezultate = list(self._prolog.query("matusa(X,Y)"))
+        return [(self._to_str(rez["X"]), self._to_str(rez["Y"])) for rez in rezultate]
 
-    # TODO: Implementează query_bunic() — returnează lista de perechi (nepot, bunic).
-    # Hint: interogează predicatul bunicul/2 din Prolog.
     def query_bunic(self) -> list[tuple[str, str]]:
         """Returnează lista de perechi (nepot, bunic)."""
-        raise NotImplementedError("De implementat")
+        rezultate = list(self._prolog.query("bunicul(X,Y)"))
+        return [(self._to_str(rez["X"]), self._to_str(rez["Y"])) for rez in rezultate]
 
-    # TODO: Implementează query_sora_lui(name) — returnează lista surorilor persoanei date.
-    # Hint: folosește f-string pentru a construi interogarea cu numele dat.
-    #       Atenție: name trebuie să fie în litere mici (atom Prolog).
     def query_sora_lui(self, name: str) -> list[str]:
         """Returnează lista surorilor persoanei cu numele dat."""
-        raise NotImplementedError("De implementat")
+        # Ne asigurăm că numele este un atom corect format (fără majuscule)
+        name_atom = name.lower()
 
-    # TODO (Tema 1): Implementează query_var() după ce ai adăugat regula var/2
-    # în family.pl. Returnează lista de perechi (văr1, văr2).
+        # Interogăm sora(X, persoana_cautata)
+        rezultate = list(self._prolog.query(f"sora(X, {name_atom})"))
+        return [self._to_str(rez["X"]) for rez in rezultate]
+
     def query_var(self) -> list[tuple[str, str]]:
         """Returnează lista de perechi de veri."""
-        raise NotImplementedError("De implementat")
+        rezultate = list(self._prolog.query("var(X,Y)"))
+        return [(self._to_str(rez["X"]), self._to_str(rez["Y"])) for rez in rezultate]
